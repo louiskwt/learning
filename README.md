@@ -1,3 +1,3 @@
 # Learning
 
-A repo to saved the code and projects related to my learning
+A repo to save the code and projects related to my learning
