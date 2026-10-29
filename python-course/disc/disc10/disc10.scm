@@ -1,0 +1,30 @@
+(define (get-slicer a b)
+  (define (slicer lst)
+    (define (slicer-helper c i j)
+      (cond 
+        ((or (null? c) (<= j i)) nil)
+        ((= i 0) (cons (car c) (slicer-helper (cdr c) i (- j 1))))
+        (else (slicer-helper (cdr c) (- i 1) (- j 1)))))
+    (slicer-helper lst a b))
+  slicer)
+
+; DOCTESTS (No need to modify)
+(define a '(0 1 2 3 4 5 6))
+(define one-two-three (get-slicer 1 4))
+(define one-end (get-slicer 1 10))
+(define zero (get-slicer 0 1))
+(define empty (get-slicer 4 4))
+
+(expect (one-two-three a) (1 2 3))
+(expect (one-end a) (1 2 3 4 5 6))
+(expect (zero a) (0))
+(expect (empty a) ())
+
+(define (reverse lst)
+    (if (null? lst) '()
+        (append (reverse (cdr lst)) (list (car lst)))
+    )
+)
+
+(expect (reverse '()) ())
+(expect (reverse '(1 2 3 4 5)) (5 4 3 2 1))
