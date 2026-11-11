@@ -1,0 +1,204 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\newtheorem*{lemma*}{Lemma}
+
+\begin{document}
+\noindent
+\textbf{Name:} [Wingz] \\
+\textbf{Course:} 6.1200J Mathematics for Computer Science \\
+\textbf{Problem Set 1 (Problems 2 -- 4)}
+\hrule
+\vspace{1em}
+
+% =========================================================================
+% PROBLEM 2
+% =========================================================================
+\section*{Problem 2: Set Formulas and Propositional Formulas}
+\begin{enumerate}
+    \item[(a)] \textbf{[5 pts] Truth Table Verification}
+    
+    \begin{proof}[Solution Structure]
+        \begin{center}
+        \small
+        \begin{tabular}{|c|c|c|c|c|c|}
+            \hline
+            $P$ & $Q$ & $\neg Q$ & $(P \land Q)$ & $(P \land \neg Q)$ & $(P \land Q) \lor (P \land \neg Q)$ \\
+            \hline
+            T & T & F & T & F & T \\
+            \hline
+            T & F & T & F & T & T \\
+            \hline
+            F & T & F & F & F & F \\
+            \hline
+            F & F & T & F & F & F \\
+            \hline
+        \end{tabular}
+        \end{center}
+        The last column matches the column for $P$, so 
+        $(P \land Q) \lor (P \land \neg Q) \equiv P$.
+    \end{proof}
+
+    \item[(b)] \textbf{[5 pts] Set Identity and Connection to Propositional Logic}
+    
+    \begin{proof}[Solution Structure]
+        Let $x$ be an arbitrary element. We want to show that $x \in A$ is logically 
+        equivalent to $x \in (A - B) \cup (A \cap B)$.
+        
+        \begin{align*}
+        x &\in (A - B) \cup (A \cap B) \\
+        &\iff x \in (A - B) \lor x \in (A \cap B) 
+            && \text{(def.\ of $\cup$)} \\
+        &\iff (x \in A \land x \notin B) \lor (x \in A \land x \in B) 
+            && \text{(def.\ of $-$ and $\cap$)} \\
+        &\iff (x \in A \land \neg(x \in B)) \lor (x \in A \land x \in B) 
+            && \text{(def.\ of $\notin$)} \\
+        &\iff (P \land \neg Q) \lor (P \land Q) 
+            && \text{(let $P \equiv x\in A$, $Q \equiv x\in B$)} \\
+        &\iff (P \land Q) \lor (P \land \neg Q) 
+            && \text{(commutativity of $\lor$)} \\
+        &\iff P 
+            && \text{(Part (a))} \\
+        &\iff x \in A.
+        \end{align*}
+        
+        \noindent\textbf{Connection to Part (a):}  
+        By letting $P \equiv (x \in A)$ and $Q \equiv (x \in B)$, the chain above 
+        is exactly the propositional equivalence of Part (a). Consequently both 
+        directions hold simultaneously, which establishes the set equality 
+        $A = (A - B) \cup (A \cap B)$.
+    \end{proof}
+\end{enumerate}
+
+\newpage
+% =========================================================================
+% PROBLEM 3
+% =========================================================================
+\section*{Problem 3: Predicate Practice}
+\begin{enumerate}
+    \item[(a)] \textbf{[2 pts] Sixish Natural Numbers}
+    \begin{equation*}
+        \text{sixish}(n) := \exists k.\, \bigl(6 \cdot 10^k \le n \land n < 7 \cdot 10^k\bigr)
+    \end{equation*}
+
+    \item[(b)] \textbf{[2 pts] Exactly Two Elements}
+    \begin{equation*}
+        \exists x\,\exists y.\; 
+        \Bigl( x \neq y \land Q(x) \land Q(y) 
+        \land \forall z.\, \bigl( Q(z) \implies (z = x \lor z = y) \bigr) \Bigr)
+    \end{equation*}
+
+    \item[(c)] \textbf{[2 pts] Goldbach's Conjecture}
+    \begin{equation*}
+        \forall n.\; 
+        \Bigl( 
+            \bigl(\neg\mathrm{isOdd}(n) \land n > 2\bigr) 
+            \implies 
+            \exists p_1\,\exists p_2.\;
+            \bigl(\mathrm{isPrime}(p_1) \land \mathrm{isPrime}(p_2) \land p_1 + p_2 = n\bigr)
+        \Bigr)
+    \end{equation*}
+
+    \item[(d)] \textbf{[2 pts] Conditional Statement for Primes}
+    \begin{equation*}
+        \forall n.\; 
+        \Bigl( (n > 100 \land \mathrm{isPrime}(n)) \implies \mathrm{sixish}(n) \Bigr)
+    \end{equation*}
+
+    \item[(e)] \textbf{[2 pts] Equivalence of Predicates}
+    \begin{proof}[Solution Structure]
+    No, the predicate $R(n)$ is \textbf{not} equivalent to $\mathrm{isOdd}(n)$.
+    
+    \textbf{1. Proof that $R(n) \implies \mathrm{isOdd}(n)$:}  
+    Assume $R(n)$ holds. Then there exists $b \in \mathbb{N}$ such that $n = 2b + 5$.  
+    Rewrite:
+    \[
+        n = 2b + 4 + 1 = 2(b + 2) + 1.
+    \]
+    Let $m = b + 2$. Since $b \in \mathbb{N}$ we also have $m \in \mathbb{N}$, so 
+    $n = 2m + 1$, i.e.\ $\mathrm{isOdd}(n)$ holds.
+    
+    \textbf{2. Counterexample for the converse ($\mathrm{isOdd}(n) \implies R(n)$):}  
+    Take $n = 1$. Then $1 = 2\cdot 0 + 1$, so $\mathrm{isOdd}(1)$ is true.  
+    Solving $1 = 2b + 5$ yields $b = -2 \notin \mathbb{N} = \{0,1,2,\dots\}$.  
+    Hence $R(1)$ is false.
+    
+    Therefore the two predicates are not equivalent.
+    \end{proof}
+\end{enumerate}
+
+\newpage
+% =========================================================================
+% PROBLEM 4
+% =========================================================================
+\section*{Problem 4: Induction and Contradiction}
+\begin{enumerate}
+    \item[(a)] \textbf{[10 pts] Proof by Induction on $n$}
+    \begin{proof}[Solution Structure]
+        \textbf{Inductive Hypothesis $P(n)$:}  
+        For any $n$ real numbers $x_1,\dots,x_n \in \mathbb{R}$,  
+        if $Q(x_1 \cdot x_2 \cdots x_n)$ holds, then at least one of 
+        $Q(x_1),\dots,Q(x_n)$ holds.
+        
+        \textbf{Base Case ($n=1$):}  
+        $P(1)$ says ``if $Q(x_1)$ then $Q(x_1)$'', which is immediate.
+        
+        (The given $n=2$ property will be used in the inductive step; 
+        one could also take $n=2$ as the base if preferred.)
+        
+        \textbf{Inductive Step:}  
+        Assume $P(k)$ holds for some $k \ge 1$.  We must prove $P(k+1)$.
+        
+        Let $x_1,\dots,x_{k+1} \in \mathbb{R}$ and suppose 
+        $Q(x_1 \cdots x_k \cdot x_{k+1})$ is true.  
+        Set $y := x_1 \cdots x_k$.  Then $Q(y \cdot x_{k+1})$ holds.
+        By the given two-factor property, either $Q(y)$ or $Q(x_{k+1})$ is true.
+        \begin{itemize}
+            \item If $Q(x_{k+1})$ holds, we are done.
+            \item If $Q(y)$ holds, then $Q(x_1 \cdots x_k)$ holds, so by the 
+                  inductive hypothesis $P(k)$ at least one of $Q(x_1),\dots,Q(x_k)$ holds.
+        \end{itemize}
+        In either case at least one of $Q(x_1),\dots,Q(x_{k+1})$ is true.  
+        Thus $P(k+1)$ holds.
+    \end{proof}
+
+    \item[(b)] \textbf{[5 pts] Choosing $Q$ and Identifying the Lemma}
+    \begin{proof}[Solution Structure]
+        To obtain Theorem~1 from part~(a) we take the predicate
+        \[
+            Q(x) \;:=\; \text{``$x$ is irrational''}.
+        \]
+        The required base property for two factors is the following lemma:
+        \begin{lemma*}
+        For any $x,y \in \mathbb{R}$, if $x\cdot y$ is irrational then at least one of 
+        $x$ or $y$ is irrational.
+        \end{lemma*}
+    \end{proof}
+
+    \item[(c)] \textbf{[5 pts] Proof by Contradiction and Theorem Completion}
+    \begin{proof}[Proof of the Lemma by Contradiction]
+        Assume, for a contradiction, that $x\cdot y$ is irrational while both 
+        $x$ and $y$ are rational.  Then there exist integers $a,b,c,d$ with 
+        $b\neq 0$, $d\neq 0$ such that
+        \[
+            x = \frac{a}{b},\qquad y = \frac{c}{d}.
+        \]
+        Their product is
+        \[
+            x\cdot y = \frac{ac}{bd}.
+        \]
+        Integers are closed under multiplication, so $ac,bd\in\mathbb{Z}$ and 
+        $bd\neq 0$.  Hence $x\cdot y$ is rational, contradicting the assumption 
+        that it is irrational.  Therefore at least one of $x$ or $y$ must be irrational.
+    \end{proof}
+
+    \begin{proof}[Proof of Theorem 1]
+        The predicate $Q(x) = $ ``$x$ is irrational'' satisfies the two-factor 
+        property by the lemma above.  Part~(a) therefore yields: for every 
+        $n\ge 1$ and every $x_1,\dots,x_n\in\mathbb{R}$, if the product 
+        $x_1\cdots x_n$ is irrational, then at least one factor is irrational.
+    \end{proof}
+\end{enumerate}
+\end{document}
