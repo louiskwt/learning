@@ -3,3 +3,5 @@
 *.pyo
 *.pyd
 *.pdf
+*.log
+*.aux
