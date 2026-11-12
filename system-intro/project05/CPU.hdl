@@ -34,27 +34,22 @@ CHIP CPU {
     PARTS:
     // set A register
     Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aRegIn);
-    Not(in=instruction[15], out=aIn);
-    Or(a=aIn, b=instruction[5], out=loadA);
+    Mux(a=true, b=instruction[5], sel=instruction[15], out=loadA);
 	ARegister(in=aRegIn, load=loadA, out=aRegOut, out[0..14]=addressM);
     // set x and y for alu
     Mux16(a=aRegOut, b=inM, sel=instruction[12], out=y);
     And(a=instruction[15], b=instruction[4], out=loadD);
     DRegister(in=aluOut, load=loadD, out=x);
-    // writeM
+    // writeM and ALU
     And(a=instruction[3], b=instruction[15], out=writeM);
-
-    ALU(x=x, y=y, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOut, out=outM, zr=zr, ng=ng);
+    ALU(x=x, y=y, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOut, out=outM, zr=zrC, ng=ngC);
     // JMP
-    Not(in=zr, out=nZr);
-    Not(in=ng, out=nNg);
-    And(a=nZr, b=nNg, out=ltz);
-    And(a=zr, b=instruction[1], out=jZr);
-    And(a=ng, b=instruction[2], out=jNg);
-    And(a=ltz, b=instruction[0], out=jLz);
-    Or(a=jZr, b=jNg, out=j1);
-    Or(a=j1, b=jLz, out=j2);
+    DMux4Way(in=true, sel[1]=ngC, sel[0]=zrC, a=ltz, b=zr, c=ng, d=null);
+    And(a=zr, b=instruction[1], out=zrJmp);
+    And(a=ng, b=instruction[2], out=ngJmp);
+    And(a=ltz, b=instruction[0], out=ltzJmp);
+    Or8Way(in[0]=ltzJmp, in[1]=zrJmp, in[2]=ngJmp, in[3..7]=false, out=hasJmp);
     // Load PC
-    And(a=instruction[15], b=j2, out=loadPC);
+    And(a=hasJmp, b=instruction[15], out=loadPC);
     PC(in=aRegOut, load=loadPC, inc=true, reset=reset, out[0..14]=pc);
 }
