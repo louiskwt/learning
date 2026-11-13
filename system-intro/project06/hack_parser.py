@@ -76,10 +76,8 @@ class Parser():
         pattern = r'^(?:[AMD]+=)?([^;]+)'
         comp_str = ""
         command_groups = re.search(pattern, self.current_command)
-        print(command_groups)
         if command_groups:
             comp_str = command_groups.group(1)
-            print(comp_str)
         if not comp_str:
             raise ValueError("Unknown COMP; Check command string.")
         return comp_str

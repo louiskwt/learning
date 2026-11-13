@@ -45,8 +45,10 @@ def assemble() -> None:
             else:
                 f.write(f"{line}\n")
 
-pre_load_symbol_table()
-assemble()
+if __name__ == "__main__":
+    pre_load_symbol_table()
+    assemble()
+    print(f"Completed! See {filename.split('.')[0]}.hack")
 
 
 
