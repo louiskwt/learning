@@ -9,8 +9,9 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 parser = Parser(filename)
+target_ext = "hack"
 
-def pre_load_symbol_table():
+def pre_load_symbol_table() -> None:
     while parser.has_more_commands():
         parser.advance()
         parser.load_symbol_table()
@@ -36,7 +37,6 @@ def assemble() -> None:
             output_list.append(output)
 
     file_tag = filename.split(".")[0]
-    target_ext = "hack"
 
     with open(f"{file_tag}.{target_ext}", "w", encoding="utf-8") as f:
         for i, line in enumerate(output_list):
@@ -48,9 +48,4 @@ def assemble() -> None:
 if __name__ == "__main__":
     pre_load_symbol_table()
     assemble()
-    print(f"Completed! See {filename.split('.')[0]}.hack")
-
-
-
-
-
+    print(f"Completed! See {filename.split('.')[0]}.{target_ext}")

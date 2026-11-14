@@ -1,4 +1,3 @@
-
 import re
 from symbol_table import SymbolTable
 from enum import Enum, auto
@@ -85,5 +84,4 @@ class Parser():
     def jump(self) -> str:
         if ";" in self.current_command:
             return self.current_command.split(";")[1]
-        return ''
- 
+        return '' 

@@ -1,4 +1,3 @@
-
 class Code():
     def __init__(self) -> None:
         bit_length_3, bit_length_7 = 3, 7
