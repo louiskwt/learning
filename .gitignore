@@ -5,3 +5,6 @@
 *.pdf
 *.log
 *.aux
+
+system-intro/project06/*.asm
+system-intro/project06/*.hack
