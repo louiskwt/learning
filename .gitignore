@@ -8,3 +8,8 @@
 
 system-intro/project06/*.asm
 system-intro/project06/*.hack
+system-intro/project07/BasicTest/
+system-intro/project07/PointerTest/
+system-intro/project07/StackTest/
+system-intro/project07/StaticTest/
+system-intro/project07/SimpleAdd/
