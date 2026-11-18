@@ -48,56 +48,47 @@ class CodeWriter():
 
 
     def write_push_pop(self, cmd_type: CommandType, segment: str, index: int) -> None:
+        commands_to_write = []
+        sequences_to_attach = self.push_sequences if cmd_type == CommandType.C_PUSH else self.pop_sequances
+
         if cmd_type == CommandType.C_PUSH:
             if segment == HACK_POINTER_OPS:
-                steps = [f"@{HACK_POINTERS[index]}", "D=M"]
-                for s in steps:
-                    self.output_file.write(f"{s}\n")
+                commands_to_write.extend([f"@{HACK_POINTERS[index]}", POINTER_COMMAND])
 
             if segment == "constant":
-                self.output_file.write(f"@{index}\n")
-                self.output_file.write("D=A\n")
+                commands_to_write.extend([f"@{index}", ADDRESS_COMMAND])
 
             if segment in HACK_MNEUNOMICS_COMMANDS.keys():
-                steps = HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "A=D+A", "D=M"]
-                for s in steps:
-                    self.output_file.write(f"{s}\n")
+                commands_to_write.extend(HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "A=D+A", POINTER_COMMAND])
 
-            for seq in self.push_sequences:
-                self.output_file.write(f"{seq}\n")
+            commands_to_write.extend(sequences_to_attach)
 
         if cmd_type == CommandType.C_POP:
             if segment in HACK_MNEUNOMICS_COMMANDS.keys():
-                steps = HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "D=D+A"]
-                for s in steps:
-                    self.output_file.write(f"{s}\n")
+                commands_to_write.extend(HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "D=D+A"])
 
             if segment == HACK_POINTER_OPS:
-                pointer_pop_sequences = ["@SP", "AM=M-1", "D=M", f"@{HACK_POINTERS[index]}", "M=D"]
-                for seq in pointer_pop_sequences:
-                    self.output_file.write(f"{seq}\n")
+                commands_to_write.extend(["@SP", "AM=M-1", "D=M", f"@{HACK_POINTERS[index]}", "M=D"])
             else:
-                for seq in self.pop_sequances:
-                    self.output_file.write(f"{seq}\n")
+                commands_to_write.extend(sequences_to_attach)
+            
+        for cmd in commands_to_write:
+            self.output_file.write(f"{cmd}\n")
 
 
     def write_arithmetic(self, command: str) -> None:
+        commands_to_write = []
+
         if command in HACK_ARITHMETICS.keys():
-            add_sub_steps = ["@SP", "AM=M-1", "D=M", "A=A-1", f"M={HACK_ARITHMETICS[command]}"]
-            for step in add_sub_steps:
-                self.output_file.write(f"{step}\n")
+            commands_to_write.extend(["@SP", "AM=M-1", "D=M", "A=A-1", f"M={HACK_ARITHMETICS[command]}"])
 
         if command in HACK_LOGICAL_OPS.keys():
-            n_ops_base_steps = ["@SP", "A=M-1"]
-            and_or_base_steps = ["@SP", "AM=M-1", "D=M", "A=A-1"]
+            n_ops_base_commands = ["@SP", "A=M-1"]
+            and_or_base_commands = ["@SP", "AM=M-1", "D=M", "A=A-1"]
             if command in ["neg", "not"]:
-                ng_not_steps = n_ops_base_steps + [f"{HACK_LOGICAL_OPS[command]}"]
-                for step in ng_not_steps:
-                    self.output_file.write(f"{step}\n")
+                commands_to_write.extend(n_ops_base_commands + [f"{HACK_LOGICAL_OPS[command]}"])
             else:
-                and_or_steps = and_or_base_steps + [f"{HACK_LOGICAL_OPS[command]}"]
-                for step in and_or_steps:
-                    self.output_file.write(f"{step}\n")
+                commands_to_write.extend(and_or_base_commands + [f"{HACK_LOGICAL_OPS[command]}"])
 
         if command in HACK_COMP_OPS.keys():
             label = command.upper()
@@ -112,16 +103,17 @@ class CodeWriter():
             ]
 
             self.stack_count[label] = self.stack_count[label] + 1
+            commands_to_write.extend(comp_steps)
 
-            for step in comp_steps:
-                self.output_file.write(f"{step}\n")
-        
+        for cmd in commands_to_write:
+            self.output_file.write(f"{cmd}\n") 
 
     def _close_loop(self) -> None:
         self.output_file.write("(END)\n")
         self.output_file.write("@END\n")
         self.output_file.write("0;JMP")
 
-    def close(self):
+
+    def close(self) -> None:
         self._close_loop()
         self.output_file.close()

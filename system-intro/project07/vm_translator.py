@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import sys
 from pathlib import Path
 from vm_parser import Parser, C_POP, C_PUSH, C_ARITHMETIC
@@ -15,8 +14,9 @@ if __name__ == "__main__":
     target = Path(arg)
 
     if target.exists():
+        output_file = f"{target.stem}{TARGET_EXT}"
         parser = Parser(target)
-        writer = CodeWriter(f"{target.stem}{TARGET_EXT}")
+        writer = CodeWriter(output_file)
         while parser.has_more_commands():
             parser.advance()
 
@@ -27,6 +27,4 @@ if __name__ == "__main__":
                 writer.write_arithmetic(parser.arg1())
 
         writer.close()
-        print("Translation completed!")
-
-
+        print(f"Translation completed >> See {output_file}")

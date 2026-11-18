@@ -19,7 +19,6 @@ C_ARITHMETIC = CommandType.C_ARITHMETIC
 class Parser():
     input_lines = []
     input_index = 0
-    stack = []
     current_command = ""
     current_cmd_type: CommandType | None = None
 
