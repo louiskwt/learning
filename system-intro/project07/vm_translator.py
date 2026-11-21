@@ -15,8 +15,9 @@ if __name__ == "__main__":
 
     if target.exists():
         output_file = f"{target.stem}{TARGET_EXT}"
+        output_path = target.parent / output_file
         parser = Parser(target)
-        writer = CodeWriter(output_file)
+        writer = CodeWriter(output_path)
         while parser.has_more_commands():
             parser.advance()
 
@@ -27,4 +28,4 @@ if __name__ == "__main__":
                 writer.write_arithmetic(parser.arg1())
 
         writer.close()
-        print(f"Translation completed >> See {output_file}")
+        print(f"Translation completed >> See {output_path}")
