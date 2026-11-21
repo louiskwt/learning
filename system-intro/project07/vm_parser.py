@@ -18,6 +18,9 @@ C_ARITHMETIC = CommandType.C_ARITHMETIC
 C_LABEL = CommandType.C_LABEL
 C_IF = CommandType.C_IF
 C_GOTO = CommandType.C_GOTO
+C_FUNCTION = CommandType.C_FUNCTION
+C_RETURN = CommandType.C_RETURN
+C_CALL = CommandType.C_CALL
 
 class Parser():
     input_lines = []
@@ -59,6 +62,10 @@ class Parser():
             return CommandType.C_IF
         elif command_parts[0] == "goto":
             return CommandType.C_GOTO
+        elif command_parts[0] == "function":
+            return CommandType.C_FUNCTION
+        elif command_parts[0] == "call":
+            return CommandType.C_CALL
         else:
             return CommandType.C_RETURN
 
