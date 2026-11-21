@@ -13,3 +13,5 @@ system-intro/project07/PointerTest/
 system-intro/project07/StackTest/
 system-intro/project07/StaticTest/
 system-intro/project07/SimpleAdd/
+system-intro/project08/**/*.cmp
+system-intro/project08/**/*.tst
