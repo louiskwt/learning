@@ -109,8 +109,8 @@ class CodeWriter():
             self.output_file.write(f"{cmd}\n") 
 
     def _close_loop(self) -> None:
-        self.output_file.write("(END)\n")
-        self.output_file.write("@END\n")
+        self.output_file.write("(END_FILE_LOOP)\n")
+        self.output_file.write("@END_FILE_LOOP\n")
         self.output_file.write("0;JMP")
 
 
