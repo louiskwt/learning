@@ -15,6 +15,9 @@ class CommandType(Enum):
 C_POP = CommandType.C_POP
 C_PUSH = CommandType.C_PUSH
 C_ARITHMETIC = CommandType.C_ARITHMETIC
+C_LABEL = CommandType.C_LABEL
+C_IF = CommandType.C_IF
+C_GOTO = CommandType.C_GOTO
 
 class Parser():
     input_lines = []
@@ -27,8 +30,10 @@ class Parser():
         with open(filename, 'r') as f: 
             lines = f.readlines()
             for line in lines:
-                if "//" not in line and line != "\n":
-                    self.input_lines.append(line.strip())
+                line = line.split("//")[0].strip()
+                if not line:
+                    continue
+                self.input_lines.append(line)
 
     def has_more_commands(self) -> bool:
         return not self.input_index == len(self.input_lines)
@@ -48,6 +53,12 @@ class Parser():
             return CommandType.C_PUSH
         elif command_parts[0] == "pop":
             return CommandType.C_POP
+        elif command_parts[0] == "label":
+            return CommandType.C_LABEL
+        elif command_parts[0] == "if-goto":
+            return CommandType.C_IF
+        elif command_parts[0] == "goto":
+            return CommandType.C_GOTO
         else:
             return CommandType.C_RETURN
 
