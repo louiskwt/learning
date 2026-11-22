@@ -4,6 +4,8 @@ TARGET_EXT = ".asm"
 
 POINTER_COMMAND = "D=M"
 ADDRESS_COMMAND = "D=A"
+GOTO_COMMAND = "0;JMP"
+POINTER_SYMBOL = "@SP"
 
 HACK_MNEUNOMICS_COMMANDS = {
     "local": ["@LCL", POINTER_COMMAND],
@@ -43,8 +45,28 @@ class CodeWriter():
     def __init__(self, filename) -> None:
         self.output_file = open(filename, "w")
         self.stack_count = {}
+        self.current_file_name = ""
+        self.address_count = {}
         self.push_sequences = ["@SP", "A=M", "M=D", "@SP", "M=M+1"]
         self.pop_sequances = ["@R13", "M=D", "@SP", "AM=M-1", "D=M", "@R13", "A=M", "M=D"]
+        self.branching_sequences = ["@SP", "AM=M-1", "D=M"]
+        self.return_sequences = [
+                                    "@LCL", POINTER_COMMAND, "@R13", "M=D", "@5", "A=D-A",
+                                    POINTER_COMMAND, "@R14", "M=D", POINTER_SYMBOL, "AM=M-1", POINTER_COMMAND,
+                                    "@ARG", "A=M", "M=D", "@ARG", "D=M+1", POINTER_SYMBOL, "M=D", "@R13", "AM=M-1",
+                                    POINTER_COMMAND, "@THAT", "M=D", "@R13", "AM=M-1", "D=M", "@THIS", "M=D", "@R13",
+                                    "AM=M-1", "D=M", "@ARG", "M=D", "@R13", "AM=M-1", "D=M", "@LCL", "M=D", "@R14",
+                                    "A=M", GOTO_COMMAND
+                                 ]
+
+
+    def set_file_name(self, filename: str) -> None:
+        self.current_file_name = filename
+
+
+    def generate_bootstrap_code(self) -> None:
+        boot_strap_code = ["@256", "D=A", "@SP", "M=D"]
+        self._output_command(boot_strap_code)
 
 
     def write_push_pop(self, cmd_type: CommandType, segment: str, index: int) -> None:
@@ -72,8 +94,7 @@ class CodeWriter():
             else:
                 commands_to_write.extend(sequences_to_attach)
             
-        for cmd in commands_to_write:
-            self.output_file.write(f"{cmd}\n")
+        self._output_command(commands_to_write) 
 
 
     def write_arithmetic(self, command: str) -> None:
@@ -105,9 +126,72 @@ class CodeWriter():
             self.stack_count[label] = self.stack_count[label] + 1
             commands_to_write.extend(comp_steps)
 
-        for cmd in commands_to_write:
-            self.output_file.write(f"{cmd}\n") 
+        self._output_command(commands_to_write)
 
+
+    def write_label(self, label: str) -> None:
+        label_command = f"({label})\n"
+        self.output_file.write(label_command)
+
+
+    def write_goto(self, label:str) -> None:
+        commands_to_write = [f"@{label}", GOTO_COMMAND]
+        self._output_command(commands_to_write)
+
+
+    def write_if_goto(self, label) -> None:
+        commands_to_write = self.branching_sequences + [f"@{label}", "D;JNE"]
+        self._output_command(commands_to_write)
+
+
+    def write_function(self, function_name: str, n_vars: int) -> None:
+        self.output_file.write(f"({function_name})\n")
+        commands_to_write = ["@0", "D=A"] + self.push_sequences
+        for _ in range(n_vars):
+            for cmd in commands_to_write:
+                self.output_file.write(f"{cmd}\n")
+
+    def write_call(self, function_name: str, n_args: int) -> None:
+        ret_addr = f"{function_name}$ret"
+        next_addr = self.address_count.get(ret_addr, 1)
+        if ret_addr not in self.address_count.keys():
+            self.address_count[ret_addr] = next_addr
+
+        ret_address_commands = [f"@{ret_addr}.{next_addr}", "D=A"] + self.push_sequences
+        self._output_command(ret_address_commands)
+
+        lcl_commands = HACK_MNEUNOMICS_COMMANDS["local"] + self.push_sequences
+        self._output_command(lcl_commands)
+        
+        arg_commands = HACK_MNEUNOMICS_COMMANDS["argument"] + self.push_sequences
+        self._output_command(arg_commands)
+
+        this_commands = HACK_MNEUNOMICS_COMMANDS["this"] + self.push_sequences
+        self._output_command(this_commands)
+
+        that_commands = HACK_MNEUNOMICS_COMMANDS["that"] + self.push_sequences
+        self._output_command(that_commands)
+
+        nArgs_commands = ["@SP", "D=M", "@5", "D=D-A", f"@{n_args}", "D=D-A", "@ARG", "M=D"]
+        self._output_command(nArgs_commands)
+        
+        lcl_sp_commands = ["@SP", "D=M", "@LCL", "M=D"]
+        self._output_command(lcl_sp_commands)
+
+        goto_func_and_label_commands = [f"@{function_name}", GOTO_COMMAND, f"({ret_addr}.{next_addr})"] 
+        self._output_command(goto_func_and_label_commands)
+
+
+    def write_return(self) -> None:
+        for cmd in self.return_sequences:
+            self.output_file.write(f"{cmd}\n")
+
+
+    def _output_command(self, commands: list[str]) -> None:
+        for cmd in commands:
+            self.output_file.write(f"{cmd}\n")
+
+        
     def _close_loop(self) -> None:
         self.output_file.write("(END_FILE_LOOP)\n")
         self.output_file.write("@END_FILE_LOOP\n")
