@@ -23,26 +23,33 @@ C_RETURN = CommandType.C_RETURN
 C_CALL = CommandType.C_CALL
 
 class Parser():
-    input_lines = []
     input_index = 0
+    input_files = {}
     current_command = ""
     current_cmd_type: CommandType | None = None
 
-    def __init__(self, filename: Path | bytes) -> None:
-        assert isinstance(filename, (Path, bytes)) 
-        with open(filename, 'r') as f: 
+    def __init__(self, file: Path) -> None:
+        self.load_file(file)
+
+    def load_file(self, file: Path) -> None:
+        file_stem = file.stem
+        self.input_files[file_stem] = []
+        with open(file, 'r') as f: 
             lines = f.readlines()
             for line in lines:
                 line = line.split("//")[0].strip()
                 if not line:
                     continue
-                self.input_lines.append(line)
+                self.input_files[file_stem].append(line) 
 
-    def has_more_commands(self) -> bool:
-        return not self.input_index == len(self.input_lines)
+    def has_more_commands(self, filename) -> bool:
+        return not self.input_index == len(self.input_files[filename])
 
-    def advance(self) -> None:
-        self.current_command = self.input_lines[self.input_index]
+    def rest(self) -> None:
+        self.input_index = 0
+
+    def advance(self, filename: str) -> None:
+        self.current_command = self.input_files[filename][self.input_index]
         self.current_cmd_type = self.command_type()
         self.input_index += 1
 
