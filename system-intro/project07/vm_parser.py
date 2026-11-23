@@ -28,8 +28,9 @@ class Parser():
     current_command = ""
     current_cmd_type: CommandType | None = None
 
-    def __init__(self, file: Path) -> None:
-        self.load_file(file)
+    def __init__(self, file: Path | None) -> None:
+        if file:
+            self.load_file(file)
 
     def load_file(self, file: Path) -> None:
         file_stem = file.stem
