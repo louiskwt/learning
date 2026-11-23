@@ -13,7 +13,7 @@ HACK_MNEUNOMICS_COMMANDS = {
     "this": ["@THIS", POINTER_COMMAND],
     "that": ["@THAT", POINTER_COMMAND],
     "temp": ["@5", ADDRESS_COMMAND],
-    "static": ["@16", ADDRESS_COMMAND]
+    "static": [ADDRESS_COMMAND]
 }
 
 HACK_POINTER_OPS = "pointer"
@@ -45,6 +45,7 @@ class CodeWriter():
     def __init__(self, filename) -> None:
         self.output_file = open(filename, "w")
         self.stack_count = {}
+        self.static_count = {}
         self.current_file_name = ""
         self.address_count = {}
         self.push_sequences = ["@SP", "A=M", "M=D", "@SP", "M=M+1"]
@@ -81,13 +82,23 @@ class CodeWriter():
                 commands_to_write.extend([f"@{index}", ADDRESS_COMMAND])
 
             if segment in HACK_MNEUNOMICS_COMMANDS.keys():
-                commands_to_write.extend(HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "A=D+A", POINTER_COMMAND])
+                if segment == "static":
+                    current_stat = self.static_count.get(self.current_file_name, 0)
+                    self.static_count[self.current_file_name] = current_stat + 1
+                    commands_to_write.extend([f"@{self.current_file_name}.{index}", POINTER_COMMAND])
+                else:
+                    commands_to_write.extend(HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "A=D+A", POINTER_COMMAND])
 
             commands_to_write.extend(sequences_to_attach)
 
         if cmd_type == CommandType.C_POP:
             if segment in HACK_MNEUNOMICS_COMMANDS.keys():
-                commands_to_write.extend(HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "D=D+A"])
+                if segment == "static":
+                    current_stat = self.static_count.get(self.current_file_name, 0)
+                    self.static_count[self.current_file_name] = current_stat + 1
+                    commands_to_write.extend([f"@{self.current_file_name}.{index}", "D=A"])
+                else:
+                    commands_to_write.extend(HACK_MNEUNOMICS_COMMANDS[segment] + [f"@{index}", "D=D+A"])
 
             if segment == HACK_POINTER_OPS:
                 commands_to_write.extend(["@SP", "AM=M-1", "D=M", f"@{HACK_POINTERS[index]}", "M=D"])
@@ -153,9 +164,9 @@ class CodeWriter():
 
     def write_call(self, function_name: str, n_args: int) -> None:
         ret_addr = f"{function_name}$ret"
-        next_addr = self.address_count.get(ret_addr, 1)
-        if ret_addr not in self.address_count.keys():
-            self.address_count[ret_addr] = next_addr
+        next_addr = self.address_count.get(function_name, 1)
+
+        self.address_count[function_name] = next_addr + 1
 
         ret_address_commands = [f"@{ret_addr}.{next_addr}", "D=A"] + self.push_sequences
         self._output_command(ret_address_commands)
@@ -181,6 +192,34 @@ class CodeWriter():
         goto_func_and_label_commands = [f"@{function_name}", GOTO_COMMAND, f"({ret_addr}.{next_addr})"] 
         self._output_command(goto_func_and_label_commands)
 
+
+    def write_bootstrap_code(self) -> None:
+        bootstrap_code = ["@256", "D=A", "@SP", "M=D"]
+        self._output_command(bootstrap_code)
+
+        ret_address_commands = [f"@RET_BOOTSTRAP", "D=A"] + self.push_sequences
+        self._output_command(ret_address_commands)
+
+        lcl_commands = HACK_MNEUNOMICS_COMMANDS["local"] + self.push_sequences
+        self._output_command(lcl_commands)
+        
+        arg_commands = HACK_MNEUNOMICS_COMMANDS["argument"] + self.push_sequences
+        self._output_command(arg_commands)
+
+        this_commands = HACK_MNEUNOMICS_COMMANDS["this"] + self.push_sequences
+        self._output_command(this_commands)
+
+        that_commands = HACK_MNEUNOMICS_COMMANDS["that"] + self.push_sequences
+        self._output_command(that_commands)
+
+        nArgs_commands = ["@SP", "D=M", "@5", "D=D-A", "@ARG", "M=D"]
+        self._output_command(nArgs_commands)
+        
+        lcl_sp_commands = ["@SP", "D=M", "@LCL", "M=D"]
+        self._output_command(lcl_sp_commands)
+
+        goto_func_and_label_commands = [f"@Sys.init", GOTO_COMMAND, "(RET_BOOTSTRAP)"] 
+        self._output_command(goto_func_and_label_commands)
 
     def write_return(self) -> None:
         for cmd in self.return_sequences:
