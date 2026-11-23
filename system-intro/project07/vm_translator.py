@@ -36,7 +36,7 @@ def translate_vm_code(parser: Parser, writer: CodeWriter, filename: str):
 
 
 if len(sys.argv) != 2:
-    print("Usage: vm_translator.py <file_name>")
+    print("Usage: vm_translator.py <file_name | file_dir>")
     sys.exit(1)
 
 
@@ -51,26 +51,36 @@ if __name__ == "__main__":
         output_path = target / output_file if is_folder else target.parent / output_file
         
         if is_folder:
-            vm_count = sum(1 for f in target.glob("*.vm") if f.is_file())
-            entry_file = target / "Sys.vm"
-            parser = Parser(entry_file)
-            for file_path in target.iterdir():
-                if file_path.is_file() and file_path.name != "Sys.vm" and ".vm" in file_path.name:
-                    parser.load_file(file_path)
+            vm_file_list = [f.name for f in target.glob("*.vm") if f.is_file()]
+            sys_vm_file = "Sys.vm"
+            parser = Parser(None)
+            has_multiple_file = len(vm_file_list) > 1
+
+            if sys_vm_file in vm_file_list:
+                entry_file = target / sys_vm_file
+                vm_file_list.remove(sys_vm_file)
+                parser.load_file(entry_file)
+
+            for file_name in vm_file_list:
+                file_path = target / file_name
+                parser.load_file(file_path)
 
             writer = CodeWriter(output_path)
-            writer.write_bootstrap_code()
+            if has_multiple_file:
+                writer.write_bootstrap_code()
             for file in parser.input_files.keys():
                 translate_vm_code(parser, writer, file)
                 parser.rest()
 
             writer.close()
-            print(f"Translation completed >> See {output_path}")
-
-
-        if ".vm" in target.name:
+        elif ".vm" in target.name:
             parser = Parser(target)
             writer = CodeWriter(output_path)
             translate_vm_code(parser, writer, target.stem)
             writer.close()
-            print(f"Translation completed >> See {output_path}")
+        else:
+            raise ValueError("Target file must have .vm extenstion")
+        
+        print(f"Translation completed >> See {output_path}")
+    else:
+        raise FileNotFoundError(f"{target} does not exist. Please check your target file or directory.")
