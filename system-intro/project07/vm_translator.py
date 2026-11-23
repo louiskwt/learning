@@ -1,8 +1,39 @@
 #!/usr/bin/env python
 import sys
 from pathlib import Path
-from vm_parser import Parser, C_POP, C_PUSH, C_ARITHMETIC
+from vm_parser import Parser, C_POP, C_PUSH, C_ARITHMETIC, C_LABEL, C_GOTO, C_IF, C_FUNCTION, C_RETURN, C_CALL
 from vm_code_writer import CodeWriter, TARGET_EXT
+
+def translate_vm_code(parser: Parser, writer: CodeWriter, filename: str):
+        writer.set_file_name(filename)
+        
+        while parser.has_more_commands(filename):
+            parser.advance(filename)
+
+            if parser.current_cmd_type in [C_POP, C_PUSH]:
+                writer.write_push_pop(parser.current_cmd_type, parser.arg1(), parser.arg2())
+
+            if parser.current_cmd_type == C_ARITHMETIC:
+                writer.write_arithmetic(parser.arg1())
+
+            if parser.current_cmd_type == C_LABEL:
+                writer.write_label(parser.arg1())
+
+            if parser.current_cmd_type == C_GOTO:
+                writer.write_goto(parser.arg1())
+
+            if parser.current_cmd_type == C_IF:
+                writer.write_if_goto(parser.arg1())
+
+            if parser.current_cmd_type == C_FUNCTION:
+                writer.write_function(parser.arg1(), parser.arg2())
+
+            if parser.current_cmd_type == C_CALL:
+                writer.write_call(parser.arg1(), parser.arg2())
+
+            if parser.current_cmd_type == C_RETURN:
+                writer.write_return()
+
 
 if len(sys.argv) != 2:
     print("Usage: vm_translator.py <file_name>")
@@ -14,18 +45,32 @@ if __name__ == "__main__":
     target = Path(arg)
 
     if target.exists():
-        output_file = f"{target.stem}{TARGET_EXT}"
-        output_path = target.parent / output_file
-        parser = Parser(target)
-        writer = CodeWriter(output_path)
-        while parser.has_more_commands():
-            parser.advance()
+        is_folder = target.is_dir()
+        file_stem = target.stem if is_folder else target.parent.stem
+        output_file = f"{file_stem}{TARGET_EXT}"
+        output_path = target / output_file if is_folder else target.parent / output_file
+        
+        if is_folder:
+            vm_count = sum(1 for f in target.glob("*.vm") if f.is_file())
+            entry_file = target / "Sys.vm"
+            parser = Parser(entry_file)
+            for file_path in target.iterdir():
+                if file_path.is_file() and file_path.name != "Sys.vm" and ".vm" in file_path.name:
+                    parser.load_file(file_path)
 
-            if parser.current_cmd_type in [C_POP, C_PUSH]:
-                writer.write_push_pop(parser.current_cmd_type, parser.arg1(), parser.arg2())
+            writer = CodeWriter(output_path)
+            writer.write_bootstrap_code()
+            for file in parser.input_files.keys():
+                translate_vm_code(parser, writer, file)
+                parser.rest()
 
-            if parser.current_cmd_type == C_ARITHMETIC:
-                writer.write_arithmetic(parser.arg1())
+            writer.close()
+            print(f"Translation completed >> See {output_path}")
 
-        writer.close()
-        print(f"Translation completed >> See {output_path}")
+
+        if ".vm" in target.name:
+            parser = Parser(target)
+            writer = CodeWriter(output_path)
+            translate_vm_code(parser, writer, target.stem)
+            writer.close()
+            print(f"Translation completed >> See {output_path}")
