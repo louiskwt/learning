@@ -1,0 +1,90 @@
+class Brick {
+    field int x, y, width, height;
+    field int hits;
+    field boolean alive;
+
+    constructor Brick new(int Ax, int Ay, int Awidth, int Aheight, int Ahits) {
+        let x = Ax;
+        let y = Ay;
+        let width = Awidth;
+        let height = Aheight;
+        let hits = Ahits;
+        let alive = true;
+        do show();
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void show() {
+        do Screen.setColor(true);
+        do draw();
+        return;
+    }
+
+    method void hide() {
+        do Screen.setColor(false);
+        do draw();
+        return;
+    }
+
+    method void draw() {
+        var int inset;
+        do Screen.drawRectangle(x, y, x + width, y + height);
+        if (hits = 2) {
+            let inset = 2;
+            do Screen.setColor(false);
+            do Screen.drawRectangle(x + inset, y + inset, (x + width) - inset, (y + height) - inset);
+            do Screen.setColor(true);
+        } else {
+            if (hits = 1) {
+                let inset = 1;
+                do Screen.setColor(false);
+                do Screen.drawRectangle(x + inset, y + inset, (x + width) - inset, (y + height) - inset);
+                do Screen.setColor(true);
+            }
+        }
+        return;
+    }
+
+    method int getLeft() {
+        return x;
+    }
+
+    method int getRight() {
+        return x + width;
+    }
+
+    method int getTop() {
+        return y;
+    }
+
+    method int getBottom() {
+        return y + height;
+    }
+
+    method boolean isAlive() {
+        return alive;
+    }
+
+    method boolean collides(int left, int right, int top, int bottom) {
+        return alive & (right > x) & (left < (x + width)) & (bottom > y) & (top < (y + height));
+    }
+
+    method boolean hit() {
+        if (~alive) {
+            return false;
+        }
+        do hide();
+        let hits = hits - 1;
+        if (hits = 0) {
+            let alive = false;
+            return true;
+        }
+        do show();
+        return false;
+    }
+}

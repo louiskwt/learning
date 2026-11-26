@@ -1,0 +1,10 @@
+class Main {
+    function void main() {
+        var BrickBreakerGame game;
+        do BrickBreakerGame.newInstance();
+        let game = BrickBreakerGame.getInstance();
+        do game.run();
+        do game.dispose();
+        return;
+    }
+}
