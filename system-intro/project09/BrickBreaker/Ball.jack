@@ -114,22 +114,44 @@ class Ball {
     }
 
     method void bounceX(int dir) {
-        var int destx;
+        var int destx, newLengthy;
         let destx = x - lengthx;
         if (lengthx = 0) {
             let destx = x + (dir * 40);
         }
-        do setDestination(destx, y + lengthy);
+
+        // Guarantee a decent vertical component
+        let newLengthy = lengthy;
+        if (Math.abs(newLengthy) < 30) {
+            if (newLengthy < 0) {
+                let newLengthy = -40;
+            } else {
+                let newLengthy = 40;
+            }
+        }
+
+        do setDestination(destx, y + newLengthy);
         return;
     }
 
     method void bounceY(int dir) {
-        var int desty;
+        var int desty, newLengthx;
         let desty = y - lengthy;
         if (lengthy = 0) {
             let desty = y + (dir * 40);
         }
-        do setDestination(x + lengthx, desty);
+
+        // Guarantee a decent horizontal component
+        let newLengthx = lengthx;
+        if (Math.abs(newLengthx) < 30) {
+            if (newLengthx < 0) {
+                let newLengthx = -40;
+            } else {
+                let newLengthx = 40;
+            }
+        }
+
+        do setDestination(x + newLengthx, desty);
         return;
     }
 
