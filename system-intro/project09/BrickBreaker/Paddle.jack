@@ -80,11 +80,11 @@ class Paddle {
         do hide();
 
 	    if (direction = 1) {
-            let x = x - 4;
+            let x = x - 6;
             if (x < 0) { let x = 0; }
         }
         else {
-            let x = x + 4;
+            let x = x + 6;
             if ((x + width) > 511) { let x = 511 - width; }
         }
 
