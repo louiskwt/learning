@@ -291,6 +291,8 @@ class BrickBreakerGame {
                 }
             }
         }
+
+        if (b.isAlive()) { do b.show(); }
         return;
     }
 
