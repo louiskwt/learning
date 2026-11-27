@@ -113,45 +113,73 @@ class Ball {
         return;
     }
 
-    method void bounceX(int dir) {
-        var int destx, newLengthy;
-        let destx = x - lengthx;
-        if (lengthx = 0) {
-            let destx = x + (dir * 40);
+    method void steer(int dx, int dy) {
+        var int adx, ady;
+        let adx = Math.abs(dx);
+        let ady = Math.abs(dy);
+        if (adx = 0) {
+            let adx = 40;
         }
+        if (ady = 0) {
+            let ady = 40;
+        }
+        if (adx > 80) {
+            let adx = 80;
+        }
+        if (ady > 80) {
+            let ady = 80;
+        }
+        if ((adx / 2) > ady) {
+            let ady = adx / 2;
+        }
+        if ((ady / 2) > adx) {
+            let adx = ady / 2;
+        }
+        if (dx < 0) {
+            let adx = -adx;
+        }
+        if (dy < 0) {
+            let ady = -ady;
+        }
+        do setDestination(x + adx, y + ady);
+        return;
+    }
 
-        // Guarantee a decent vertical component
-        let newLengthy = lengthy;
-        if (Math.abs(newLengthy) < 30) {
-            if (newLengthy < 0) {
-                let newLengthy = -40;
+    method void bounceX(int dir) {
+        var int dx, dy;
+        let dx = Math.abs(lengthx);
+        if (dx = 0) {
+            let dx = 40;
+        }
+        let dx = dir * dx;
+        let dy = lengthy;
+        if (dy = 0) {
+            if (movingDown()) {
+                let dy = 40;
             } else {
-                let newLengthy = 40;
+                let dy = -40;
             }
         }
-
-        do setDestination(destx, y + newLengthy);
+        do steer(dx, dy);
         return;
     }
 
     method void bounceY(int dir) {
-        var int desty, newLengthx;
-        let desty = y - lengthy;
-        if (lengthy = 0) {
-            let desty = y + (dir * 40);
+        var int dx, dy;
+        let dy = Math.abs(lengthy);
+        if (dy = 0) {
+            let dy = 40;
         }
-
-        // Guarantee a decent horizontal component
-        let newLengthx = lengthx;
-        if (Math.abs(newLengthx) < 30) {
-            if (newLengthx < 0) {
-                let newLengthx = -40;
+        let dy = dir * dy;
+        let dx = lengthx;
+        if (dx = 0) {
+            if (movingRight()) {
+                let dx = 40;
             } else {
-                let newLengthx = 40;
+                let dx = -40;
             }
         }
-
-        do setDestination(x + newLengthx, desty);
+        do steer(dx, dy);
         return;
     }
 
@@ -198,22 +226,22 @@ class Ball {
             let d = d + diagonalD;
 
             if (positivey) {
-                if (invert) { let x = x + 6; }
-                else { let y = y + 6; }
+                if (invert) { let x = x + 4; }
+                else { let y = y + 4; }
             }
             else {
-                if (invert) { let x = x - 6; }
-                else { let y = y - 6; }
+                if (invert) { let x = x - 4; }
+                else { let y = y - 4; }
             }
 	    }
 
         if (positivex) {
-            if (invert) { let y = y + 6; }
-            else { let x = x + 6; }
+            if (invert) { let y = y + 4; }
+            else { let x = x + 4; }
 	    }
 	    else {
-            if (invert) { let y = y - 6; }
-            else { let x = x - 6; }
+            if (invert) { let y = y - 4; }
+            else { let x = x - 4; }
 	    }
 
 	    if (~(x > leftWall)) {
@@ -238,53 +266,19 @@ class Ball {
 	    return wall;
     }
 
-    /**
-     * Bounces off the current wall: sets the new destination
-     * of the ball according to the ball's angle and the given
-     * bouncing direction (-1/0/1=left/center/right or up/center/down).
-     */
-    method void bounce(int bouncingDirection) {
-        var int newx, newy, divLengthx, divLengthy, factor;
-
-	    // Since results are too big, divides by 10
-        let divLengthx = lengthx / 10;
-        let divLengthy = lengthy / 10;
-        if (divLengthx = 0) { let divLengthx = 1; }
-        if (divLengthy = 0) { let divLengthy = 1; }
-	    if (bouncingDirection = 0) { let factor = 10; }
-	    else {
-	        if (((~(lengthx < 0)) & (bouncingDirection = 1)) | ((lengthx < 0) & (bouncingDirection = (-1)))) {
-                let factor = 20; // bounce direction is in ball direction
-            }
-	        else { let factor = 5; } // bounce direction is against ball direction
-	    }
-
-	    if (wall = 1) {
-	        let newx = 506;
-	        let newy = (divLengthy * (-50)) / divLengthx;
-            let newy = y + (newy * factor);
-	    }
-        else {
-            if (wall = 2) {
-                let newx = 0;
-                let newy = (divLengthy * 50) / divLengthx;
-                let newy = y + (newy * factor);
-	        }
-	        else {
-                if (wall = 3) {
-		            let newy = 250;
-		            let newx = (divLengthx * (-25)) / divLengthy;
-                    let newx = x + (newx * factor);
-		        }
-                else { // assumes wall = 4
-		            let newy = 0;
-		            let newx = (divLengthx * 25) / divLengthy;
-                    let newx = x + (newx * factor);
-		        }
+    method void bouncePaddle(int paddleLeft, int paddleRight) {
+        var int offset, dx, dy;
+        let offset = (x + 3) - ((paddleLeft + paddleRight) / 2);
+        let dx = offset * 3;
+        if (Math.abs(offset) < 6) {
+            if (movingRight()) {
+                let dx = 40;
+            } else {
+                let dx = -40;
             }
         }
-
-        do setDestination(newx, newy);
+        let dy = -80;
+        do steer(dx, dy);
         return;
     }
 }

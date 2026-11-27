@@ -134,7 +134,7 @@ class BrickBreakerGame {
                 } else {
                     do stickBall();
                 }
-                do Sys.wait(50);
+                do Sys.wait(25);
             }
             do paddle.setDirection(0);
         }
@@ -148,7 +148,7 @@ class BrickBreakerGame {
     }
 
     method void moveBall() {
-        var int bouncingDirection, paddleLeft, paddleRight, ballLeft, ballRight, i;
+        var int paddleLeft, paddleRight, ballLeft, ballRight, i;
         var int overlapX, overlapY, bx, by;
         var Brick b;
         var boolean hitBrick, bounceSide, bounceTop, hasHit;
@@ -224,15 +224,8 @@ class BrickBreakerGame {
             if ((ballRight > paddleLeft) & (ballLeft < paddleRight) & (ball.getBottom() > paddle.getTop()) & (ball.getTop() < paddle.getBottom())) {
                 if (~lastHitPaddle) {
                     let lastHitPaddle = true;
-                    let bouncingDirection = 0;
-                    if (ballRight < (paddleLeft + 10)) {
-                        let bouncingDirection = -1;
-                    } else {
-                        if (ballLeft > (paddleRight - 10)) { let bouncingDirection = 1; }
-                    }
-                    do ball.setWall(4);
-                    do ball.bounce(bouncingDirection);
-                    do ball.setWall(0);
+                    do ball.bouncePaddle(paddleLeft, paddleRight);
+                    do ball.setPosition(ball.getLeft(), paddle.getTop() - 6);
                     do paddle.show();
                 }
             } else {
