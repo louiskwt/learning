@@ -115,7 +115,7 @@ class BrickBreakerGame {
                 do paddle.setDirection(1);
             } else {
                 if (key = 132) {
-                    do paddle.setDirection(2);
+                    do paddle.setDirection(5);
                 } else {
                     if ((key = 131) | (key = 32)) {
                         do launch();
@@ -172,7 +172,7 @@ class BrickBreakerGame {
                 let bounceSide = false;
                 let bounceTop = false;
 
-                if (Math.abs(overlapX - overlapY) < 2) {
+                if (Math.abs(overlapX - overlapY) < 4) {
                     let bounceSide = true;
                     let bounceTop = true;
                 } else {
@@ -203,7 +203,7 @@ class BrickBreakerGame {
                         let by = b.getTop() - 6;
                         if (ball.movingDown()) { do ball.bounceY(-1); }
                     } else {
-                        let by = b.getBottom() + 5;
+                        let by = b.getBottom() + 6;
                         if (ball.movingUp()) { do ball.bounceY(1); }
                     }
                 }
