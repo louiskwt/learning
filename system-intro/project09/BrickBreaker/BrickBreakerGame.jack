@@ -109,7 +109,7 @@ class BrickBreakerGame {
                 } else {
                     do stickBall();
                 }
-                do Sys.wait(50);
+                do Sys.wait(25);
             }
             if (key = 130) {
                 do paddle.setDirection(1);

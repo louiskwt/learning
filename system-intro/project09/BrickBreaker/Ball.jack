@@ -198,22 +198,22 @@ class Ball {
             let d = d + diagonalD;
 
             if (positivey) {
-                if (invert) { let x = x + 4; }
-                else { let y = y + 4; }
+                if (invert) { let x = x + 6; }
+                else { let y = y + 6; }
             }
             else {
-                if (invert) { let x = x - 4; }
-                else { let y = y - 4; }
+                if (invert) { let x = x - 6; }
+                else { let y = y - 6; }
             }
 	    }
 
         if (positivex) {
-            if (invert) { let y = y + 4; }
-            else { let x = x + 4; }
+            if (invert) { let y = y + 6; }
+            else { let x = x + 6; }
 	    }
 	    else {
-            if (invert) { let y = y - 4; }
-            else { let x = x - 4; }
+            if (invert) { let y = y - 6; }
+            else { let x = x - 6; }
 	    }
 
 	    if (~(x > leftWall)) {
