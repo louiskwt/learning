@@ -115,7 +115,7 @@ class BrickBreakerGame {
                 do paddle.setDirection(1);
             } else {
                 if (key = 132) {
-                    do paddle.setDirection(5);
+                    do paddle.setDirection(2);
                 } else {
                     if ((key = 131) | (key = 32)) {
                         do launch();
@@ -208,6 +208,7 @@ class BrickBreakerGame {
                     }
                 }
                 do ball.setPosition(bx, by);
+                if (b.isAlive()) { do b.show(); }
             }
             let i = i + 1;
         }
@@ -232,6 +233,7 @@ class BrickBreakerGame {
                     do ball.setWall(4);
                     do ball.bounce(bouncingDirection);
                     do ball.setWall(0);
+                    do paddle.show();
                 }
             } else {
                 let lastHitPaddle = false;
@@ -291,9 +293,6 @@ class BrickBreakerGame {
                 }
             }
         }
-
-        if (b.isAlive()) { do b.show(); }
-        do paddle.show();
         return;
     }
 
