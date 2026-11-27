@@ -168,7 +168,7 @@ class Ball {
      * 1 (left wall), 2 (right wall), 3 (top wall), 4 (bottom wall).
      */
     method int move() {
-
+        let wall = 0;
 	    do hide();
 
         if (d < 0) { let d = d + straightD; }
